@@ -177,56 +177,47 @@ contract('RicoToken', accounts => {
 
         it('should revert if user minting is not enabled', async () => {
             const userMintLimitReached = await token.userMintLimitReached();
-            const mint = token.mint(user1, 100, { from: user1 });
+            const userMint = token.userMint(100, { from: user1 });
 
             assert.equal(userMintLimitReached, false);
-            await util.assertRevert(mint);
+            await util.assertRevert(userMint);
         });
 
         it.skip('should allow user to mint tokens if user minting is enabled and number of tokens minted is <= 6000000 or address token balance to mint is <= 10000', async () => {
+            // change values for testing purposes OWNER_MINT_LIMIT = OWNER_TOKENS_PER_ADDRESS_MINT_LIMIT (100000) && USER_MINT_LIMIT = USER_TOKENS_PER_ADDRESS_MINT_LIMIT (10000)
+            await token.mint(owner, 100000000000000000000000, {from: owner});
+            const ownerMintLimitReached = await token.ownerMintLimitReached();
+            const ownerMintedAmount = await token.getMintedAmount(owner);
+            const numberOfTokensMinted = await token.numberOfTokensMinted();
+
+            assert.equal(ownerMintLimitReached, true);
+            assert.equal(ownerMintedAmount, 100000000000000000000000);
+            assert.equal(numberOfTokensMinted, 100000000000000000000000);
+
             const userMintLimitReached = await token.userMintLimitReached();
-            const mint = token.mint(user1, 100, { from: user });
-            const user1MintedAmount = (await token.balanceOf(user1)).toNumber();
+            await token.userMint(10000000000000000000000, {from: user1});
+            const user1MintedAmount = await token.getMintedAmount(user1);
+            const numberOfTokensMinted2 = await token.numberOfTokensMinted();
 
             assert.equal(userMintLimitReached, false);
-            assert.equal(user1MintedAmount, 100);
+            assert.equal(user1MintedAmount, 10000000000000000000000);
+            assert.equal(numberOfTokensMinted2, 110000000000000000000000);
+
+            await token.transfer(user1, 10000000000000000000000, {from: owner});
+            const user1Balance = await token.balanceOf(user1);
+            const totalSupply = await token.totalSupply();
+            const userMintLimitReached2 = await token.userMintLimitReached();
+
+            assert.equal(userMintLimitReached2, true);
+            assert.equal(user1Balance, 20000000000000000000000);
+            assert.equal(totalSupply, 21110000000000000000000000);
         });
 
         it('should revert if number of tokens minted is > 6000000 or address token balance to mint is > 100000', async () => {
             const ownerMintLimitReached = await token.ownerMintLimitReached();
-            const mint = token.mint(user1, 10000000000000000000000000000000000000, { from: owner });
+            const userMint = token.userMint(10000000000000000000000000000000000000, { from: owner });
 
-            await util.assertRevert(mint);
-        });
-    });
-
-    describe('getMintedAmount', () => {
-        beforeEach(async () => {
-            token = await RicoToken.new({ from: owner });
-        });
-
-        it('should revert if user minting is not enabled', async () => {
-            const userMintLimitReached = await token.userMintLimitReached();
-            const mint = token.mint(user1, 100, { from: user1 });
-
-            assert.equal(userMintLimitReached, false);
-            await util.assertRevert(mint);
-        });
-
-        it.skip('should allow user to mint tokens if user minting is enabled and number of tokens minted is <= 6000000 or address token balance to mint is <= 10000', async () => {
-            const userMintLimitReached = await token.userMintLimitReached();
-            const mint = token.mint(user1, 100, { from: user });
-            const user1MintedAmount = (await token.balanceOf(user1)).toNumber();
-
-            assert.equal(userMintLimitReached, false);
-            assert.equal(user1MintedAmount, 100);
-        });
-
-        it('should revert if number of tokens minted is > 6000000 or address token balance to mint is > 100000', async () => {
-            const ownerMintLimitReached = await token.ownerMintLimitReached();
-            const mint = token.mint(user1, 10000000000000000000000000000000000000, { from: owner });
-
-            await util.assertRevert(mint);
+            await util.assertRevert(userMint);
         });
     });
 

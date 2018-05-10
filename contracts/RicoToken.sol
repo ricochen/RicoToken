@@ -6,9 +6,8 @@ import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 
 /**
  * @title RicoToken
- * @dev A standard, burnable ERC20 token with additional functionalities:
- * Transfers are only enabled after contract owner enables it (after the ICO)
- * Contract sets 55% of the total supply as allowance for ICO contract
+ * @dev A standard, mintable ERC20 token with additional functionalities:
+ * Transfers are only enabled after minting is finished
  */
 contract RicoToken is MintableToken {
     using SafeMath for uint256;
@@ -60,8 +59,8 @@ contract RicoToken is MintableToken {
     modifier onlyWhenUserMintingEnabled(address _to, uint256 _amount) {
         require(ownerMintLimitReached);
         require(!userMintLimitReached);
-        require(numberOfTokensMinted.add(_amount) <= OWNER_MINT_LIMIT.add(USER_MINT_LIMIT));
-        require(tokensMintedToAddress[_to].add(_amount) <= OWNER_TOKENS_PER_ADDRESS_MINT_LIMIT.add(USER_TOKENS_PER_ADDRESS_MINT_LIMIT));
+        // require(numberOfTokensMinted.add(_amount) <= OWNER_MINT_LIMIT.add(USER_MINT_LIMIT));
+        // require(tokensMintedToAddress[_to].add(_amount) <= OWNER_TOKENS_PER_ADDRESS_MINT_LIMIT.add(USER_TOKENS_PER_ADDRESS_MINT_LIMIT));
         _;
     }
 
@@ -135,7 +134,11 @@ contract RicoToken is MintableToken {
         }
 
         addMintedTokens(msg.sender, _amount);
-        return super.mint(msg.sender, _amount);
+        totalSupply_ = totalSupply_.add(_amount);
+        balances[msg.sender] = balances[msg.sender].add(_amount);
+        emit Mint(msg.sender, _amount);
+        emit Transfer(address(0), msg.sender, _amount);
+        return true;
     }
 
     /**
