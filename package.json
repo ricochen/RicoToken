@@ -1,8 +1,7 @@
 {
-  "name": "erc20",
+  "name": "ricotoken",
   "version": "1.0.0",
-  "description": "`git clone https://github.com/ricochen/smart-contracts.git`",
-  "main": "truffle-config.js",
+  "description": "RicoToken",
   "directories": {
     "test": "test"
   },

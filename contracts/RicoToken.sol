@@ -59,8 +59,8 @@ contract RicoToken is MintableToken {
     modifier onlyWhenUserMintingEnabled(address _to, uint256 _amount) {
         require(ownerMintLimitReached);
         require(!userMintLimitReached);
-        // require(numberOfTokensMinted.add(_amount) <= OWNER_MINT_LIMIT.add(USER_MINT_LIMIT));
-        // require(tokensMintedToAddress[_to].add(_amount) <= OWNER_TOKENS_PER_ADDRESS_MINT_LIMIT.add(USER_TOKENS_PER_ADDRESS_MINT_LIMIT));
+        require(numberOfTokensMinted.add(_amount) <= OWNER_MINT_LIMIT.add(USER_MINT_LIMIT));
+        require(tokensMintedToAddress[_to].add(_amount) <= OWNER_TOKENS_PER_ADDRESS_MINT_LIMIT.add(USER_TOKENS_PER_ADDRESS_MINT_LIMIT));
         _;
     }
 
